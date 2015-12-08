@@ -1,0 +1,84 @@
+int no[11][9]={{0,0,0,0,0,0,1,1},   // 0
+               {1,0,0,1,1,1,1,1},   // 1
+               {0,0,1,0,0,1,0,1},   // 2
+               {0,0,0,0,1,1,0,1},   // 3
+               {1,0,0,1,1,0,0,1},   // 4
+               {0,1,0,0,1,0,0,1},   // 5
+               {0,1,0,0,0,0,0,1},   // 6
+               {0,0,0,1,1,1,1,1},   // 7
+               {0,0,0,0,0,0,0,1},   // 8
+               {0,0,0,1,1,0,0,1},   // 9
+               {1,1,1,1,1,1,1,0}};  // cp
+         
+int delay_time = 7,potPin=3,t=60,onoff=2;           // 宣告可變電阻所用的類比輸入腳位port3、t 為延遲時間。
+   void setup()
+   {
+     for(int i = 3; i<=13;i++)
+      pinMode(i,OUTPUT);   // LED.
+     pinMode(onoff,INPUT); // 開關.
+      Serial.begin(9600);
+   }
+   void loop()
+   {
+     for (unsigned int number = 0; number < 60; number++) //7段計數由0~59
+     {
+       unsigned long startTime = millis();   // // 記錄按鈕被按下的起始時間,無符號的long.
+       for (unsigned long elapsed=0; elapsed < t; elapsed = millis() - startTime)// 每0.2秒計數一次,// 計算按鈕被按了多久,7段10位數和個位數快速切換.t用來決定延遲秒數,延遲提升迴圈便多繞幾圈.
+       {    
+            int sensorValue = analogRead(potPin);  // star為port開始的順序此從開始、star為port開始的順序此從開始、讀取可變電阻讀值並且放到 sensorValue 變數裏。 
+             // 顯示個位數
+             lightDigit1(number%10);             
+             delay(delay_time);             
+             t=analogRead(potPin)+60;                         // 讀取類比port3的可變電阻讀值並且放到 t 變數裡。 
+             Serial.println(sensorValue);                          // 讀取光敏電阻並輸出到 sensorValuet，監控。 
+ 
+             // 顯示十位數
+             lightDigit2(number/10);
+             delay(delay_time);            
+              t=analogRead(potPin)+60;                         // 讀取類比port3的可變電阻讀值並且放到 t 變數裡。 
+             Serial.println(sensorValue);                          // 讀取光敏電阻並輸出到 sensorValuet，監控。
+       }
+        while(digitalRead(onoff)==1){
+          lightDigit1(number%10);             
+             delay(delay_time);
+          lightDigit2(number/10);
+             delay(delay_time);
+        } //-------------// 開關停止或繼續
+     }
+   }    
+   void pickDigit(int x) 
+   {
+        digitalWrite(3, HIGH); // 先都關閉.
+        digitalWrite(4, HIGH);
+     switch(x) 
+     {
+	 case 1: digitalWrite(3, LOW); break;  // 十.
+	 case 2: digitalWrite(4, LOW); break; // 個.
+     }
+   }
+  // 點亮個位數
+   void lightDigit1(byte number)
+   {
+       pickDigit(1);   // 十亮.
+       lightSegments(number); 
+   }
+	 
+  // 點亮十位數
+   void lightDigit2(byte number)
+   {
+       pickDigit(2);
+       lightSegments(number); 
+   }   
+   void lightSegments(byte number)
+   {
+     int pin = 6;
+     for(int i = 0;i <=7;i++)
+     {
+       if (number==10)
+        continue;
+       else
+        digitalWrite(pin,no[number][i]);
+       pin++;
+     }
+   }
+  
